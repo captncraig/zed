@@ -14,8 +14,10 @@ const (
 	None OpcodeFlags = 0
 )
 
-var V3Opcodes = map[string]map[byte]Opcode{
-	"2OP": map[byte]Opcode{
+type OpcodeMap map[string]map[byte]*Opcode
+
+var V3Opcodes = OpcodeMap{
+	"2OP": map[byte]*Opcode{
 		0x01: {"je", FlagBranch},
 		0x02: {"jl", FlagBranch},
 		0x03: {"jg", FlagBranch},
@@ -41,7 +43,7 @@ var V3Opcodes = map[string]map[byte]Opcode{
 		0x17: {"div", FlagStore},
 		0x18: {"mod", FlagStore},
 	},
-	"1OP": map[byte]Opcode{
+	"1OP": map[byte]*Opcode{
 		0x00: {"jz", FlagBranch},
 		0x01: {"get_sibling", FlagStore | FlagBranch},
 		0x02: {"get_child", FlagStore | FlagBranch},
@@ -58,7 +60,7 @@ var V3Opcodes = map[string]map[byte]Opcode{
 		0x0E: {"load", FlagStore},
 		0x0F: {"not", FlagStore},
 	},
-	"0OP": map[byte]Opcode{
+	"0OP": map[byte]*Opcode{
 		0x00: {"rtrue", None},
 		0x01: {"rfalse", None},
 		0x02: {"print", None},
@@ -74,7 +76,7 @@ var V3Opcodes = map[string]map[byte]Opcode{
 		0x0C: {"show_status", None},
 		0x0D: {"verify", FlagBranch},
 	},
-	"VAR": map[byte]Opcode{
+	"VAR": map[byte]*Opcode{
 		0x00: {"call", FlagStore},
 		0x01: {"storew", None},
 		0x02: {"storeb", None},

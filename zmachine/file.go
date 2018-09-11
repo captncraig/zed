@@ -7,7 +7,10 @@ import (
 )
 
 // StoryFile is
-type StoryFile []byte
+type StoryFile struct {
+	Raw    []byte
+	Header *Header
+}
 
 type ByteAddress uint16
 type WordAddress uint16
@@ -33,7 +36,7 @@ type Header struct {
 	InterpreterVersion byte        // 1F
 }
 
-func LoadStory(fname string) (*Header, StoryFile, error) {
+func LoadStory(fname string) (*StoryFile, error) {
 	dat, err := ioutil.ReadFile(fname)
 	if err != nil {
 		return nil, nil, err
@@ -43,5 +46,9 @@ func LoadStory(fname string) (*Header, StoryFile, error) {
 	if err = binary.Read(r, binary.BigEndian, hdr); err != nil {
 		return nil, nil, err
 	}
-	return hdr, StoryFile(dat), nil
+	story := &StoryFile{
+		Raw:    dat,
+		Header: hdr,
+	}
+	return story, nil
 }

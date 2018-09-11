@@ -1,6 +1,8 @@
-package decode
+package zmachine
 
-import "github.com/captncraig/zed/zmachine"
+import (
+	"fmt"
+)
 
 type OperandType byte
 
@@ -13,7 +15,8 @@ const (
 
 type Instruction struct {
 	OpCount       string // 0OP, 1OP, 2OP or VAR
-	OpCode        byte
+	OpNum         byte
+	OpCode        *zmachine.Opcode
 	OperandTypes  []OperandType
 	OperandValues []uint16
 	StoreVariable *byte
@@ -23,13 +26,13 @@ type Instruction struct {
 	Raw []byte
 }
 
-func Decode(story zmachine.StoryFile, addr uint32) *Instruction {
-	instr := &Instruction{}
+func Decode(story zmachine.StoryFile, addr uint32, ops zmachine.OpcodeMap) *Instruction {
 	b0 := story[addr]
+	instr := &Instruction{Raw: []byte{b0}}
 	switch b0 >> 6 {
 	case 0x03:
 		// variable form
-		instr.OpCode = b0 & 0x1F
+		instr.OpNum = b0 & 0x1F
 		if (b0>>5)&1 == 1 {
 			instr.OpCount = "VAR"
 		} else {
@@ -37,7 +40,7 @@ func Decode(story zmachine.StoryFile, addr uint32) *Instruction {
 		}
 	case 0x02:
 		// short form
-		instr.OpCode = b0 & 0x0F
+		instr.OpNum = b0 & 0x0F
 		opType := OperandType(b0>>4) & OperandTypeOmitted
 		if opType == OperandTypeOmitted {
 			instr.OpCount = "0OP"
@@ -46,8 +49,9 @@ func Decode(story zmachine.StoryFile, addr uint32) *Instruction {
 			instr.OperandTypes = []OperandType{opType}
 		}
 	default:
-		// long form EXECPT 0xBE
-		instr.OpCode = b0 & 0x1F
+		// long form
+		// TODO: extended
+		instr.OpNum = b0 & 0x1F
 		instr.OpCount = "2OP"
 		instr.OperandTypes = []OperandType{OperandTypeShortConstant, OperandTypeShortConstant}
 		if (b0>>7)&1 == 1 {
@@ -57,4 +61,16 @@ func Decode(story zmachine.StoryFile, addr uint32) *Instruction {
 			instr.OperandTypes[1] = OperandTypeVariable
 		}
 	}
+	// look up opcode
+	subMap, ok := ops[instr.OpCount]
+	if !ok {
+		panic(fmt.Sprintf("Unknown Op Count '%s'", instr.OpCount))
+	}
+	opcode, ok := subMap[instr.OpNum]
+	if !ok {
+		panic(fmt.Sprintf("Unknown %s Opcode '%d'", instr.OpCount, instr.OpNum))
+	}
+	instr.OpCode = opcode
+	fmt.Println(opcode.Name)
+	return instr
 }
