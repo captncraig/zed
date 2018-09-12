@@ -2,7 +2,7 @@ package zmachine
 
 type Opcode struct {
 	Name  string
-	Flags OpcodeFlags
+	Flags        OpcodeFlags
 }
 
 type OpcodeFlags byte
