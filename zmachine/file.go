@@ -12,6 +12,12 @@ type StoryFile struct {
 	Header *Header
 }
 
+// Cursor is a helper for reading a sequence of bytes from a story at a given location
+type Cursor struct {
+	Story *StoryFile
+	Index uint32
+}
+
 type ByteAddress uint16
 type WordAddress uint16
 type PackedAddress uint16
@@ -39,12 +45,12 @@ type Header struct {
 func LoadStory(fname string) (*StoryFile, error) {
 	dat, err := ioutil.ReadFile(fname)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	r := bytes.NewReader(dat)
 	hdr := &Header{}
 	if err = binary.Read(r, binary.BigEndian, hdr); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	story := &StoryFile{
 		Raw:    dat,

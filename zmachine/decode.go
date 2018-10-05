@@ -16,7 +16,7 @@ const (
 type Instruction struct {
 	OpCount       string // 0OP, 1OP, 2OP or VAR
 	OpNum         byte
-	OpCode        *zmachine.Opcode
+	OpCode        *Opcode
 	OperandTypes  []OperandType
 	OperandValues []uint16
 	StoreVariable *byte
@@ -26,8 +26,8 @@ type Instruction struct {
 	Raw []byte
 }
 
-func Decode(story zmachine.StoryFile, addr uint32, ops zmachine.OpcodeMap) *Instruction {
-	b0 := story[addr]
+func Decode(story *StoryFile, addr uint32, ops OpcodeMap) *Instruction {
+	b0 := story.Raw[addr]
 	instr := &Instruction{Raw: []byte{b0}}
 	switch b0 >> 6 {
 	case 0x03:
